@@ -1,28 +1,52 @@
 package UI
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
-import androidx.compose.ui.unit.dp
+import com.mmk.kmpauth.google.GoogleAuthCredentials
+import com.mmk.kmpauth.google.GoogleAuthProvider
+import com.mmk.kmpauth.google.GoogleButtonUiContainer
+import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
+import database.daos.UserDao
 
 @Composable
-fun SignInScreen(){
-    Column(
-        modifier = Modifier
-            .padding(20.dp, 50.dp, 20.dp, 10.dp)
-            .fillMaxSize()
-    ){
-        Text(
-            text = "Sign In",
-            style = MaterialTheme.typography.h3,
-            fontWeight = Bold,
-            color = Color.Black
+fun SignInScreen(
+    onNavigateToLog: () -> Unit
+){
+    var authReady by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit){
+        GoogleAuthProvider.create(
+            credentials = GoogleAuthCredentials(
+                serverId = "39610408044-ie6e2nmvs5cm25skqikl6bon1dg6c621.apps.googleusercontent.com"
+            )
         )
+        authReady = true
+    }
+    if (authReady){
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            GoogleButtonUiContainer(
+                onGoogleSignInResult = { googleUser ->
+                    val tokenId = googleUser?.idToken
+                    val userName = googleUser?.displayName
+                    println("Token: $tokenId")
+                    println("Name: $userName")
+                    onNavigateToLog()
+                }
+            ) {
+                GoogleSignInButton(
+                    onClick = { this.onClick() }
+                )
+            }
+        }
     }
 }
